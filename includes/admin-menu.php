@@ -31,23 +31,62 @@ function lisa_options_pages() {
 }
 
 function lisa_index_settings_page_html_cb() {
-	$index_name = $_GET['index_name'] ?? '';
+	global $lisa_current_index;
+	$lisa_current_index = $_GET['index_name'] ?? '';
 
-	if ( empty( $index_name ) ) {
+	if ( empty( $lisa_current_index ) ) {
 		add_settings_error(
 			'lisa_messages',
 			'lisa_index_missing',
 			__( 'No index name specified.', 'lisa' ),
 			'error'
 		);
-
-		settings_errors( 'lisa_messages' );
 	}
+
+	/** WordPress will add the 'settings-updated' GET parameter when a user submits settings. */
+	if ( isset( $_GET['settings-updated'] ) ) {
+		add_settings_error(
+			setting: 'lisa_messages',
+			code: 'lisa_message',
+			message: __( 'Settings saved.', 'lisa' ),
+			type: 'success'
+		);
+	}
+
+	settings_errors( setting: 'lisa_messages' );
 	?>
 	<div class="wrap">
 		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-		<?php if ( empty( $index_name ) ) return; ?>
-		<p>Index name: <?php echo $index_name; ?></p>
+		<?php if ( empty( $lisa_current_index ) ) return; ?>
+		<p>
+			<?php esc_html_e( 'Here you can configure various Algolia settings for this index. Saving will overwrite the current settings in Algolia. It\'s recommended to fetch the latest settings first—note that fetched settings are not saved automatically.', 'lisa' ); ?>
+		</p>
+		<button class="button" id="lisa-fetch-index-settings" data-index-name="<?php echo $lisa_current_index; ?>">
+			<?php _e( 'Fetch Index Settings', 'lisa' ); ?>
+		</button>
+		<form action="options.php" method="post">
+			<input type="hidden" name="index_name" value="<?php echo esc_attr( $lisa_current_index ); ?>">
+
+			<?php
+			/**
+			 * Outputs the nonce, action and option_page fields for security.
+			 * @see https://developer.wordpress.org/reference/functions/settings_fields/
+			 */
+			settings_fields( option_group: 'lisa_indices' );
+
+			/**
+			 * Prints out all the settings sections added to the specified page.
+			 * @see https://developer.wordpress.org/reference/functions/do_settings_sections/
+			 */
+			do_settings_sections( page: 'lisa_index_settings' );
+
+			/**
+			 * Adds a submit button with provided text and appropriate classes.
+			 * @see https://developer.wordpress.org/reference/functions/submit_button/
+			 */
+			submit_button( text: 'Save Changes' );
+			?>
+		</form>
 	</div>
 	<?php
 }

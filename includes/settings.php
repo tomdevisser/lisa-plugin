@@ -16,10 +16,16 @@ function lisa_settings_init() {
 		)
 	);
 
-	/**
-	 * Creates a group of settings with a shared heading.
-	 * @see https://developer.wordpress.org/reference/functions/add_settings_section/
-	 */
+	register_setting(
+		option_group: 'lisa_indices',
+		option_name: 'lisa_algolia_indices',
+		args: array(
+			'type' => 'array',
+			'label' => __( 'Algolia Indices', 'lisa' ),
+			'description' => 'Algolia Indices will contain the configuration for your indices.',
+		)
+	);
+
 	add_settings_section(
 		id: 'lisa_section_algolia_credentials',
 		title: __( 'Algolia Credentials', 'lisa' ),
@@ -29,6 +35,44 @@ function lisa_settings_init() {
 			'before_section' => '',
 			'after_section' => '',
 			'section_class' => '',
+		),
+	);
+
+	add_settings_section(
+		id: 'lisa_section_algolia_pagination',
+		title: __( 'Pagination', 'lisa' ),
+		callback: 'lisa_section_pagination_cb',
+		page: 'lisa_index_settings',
+		args: array(
+			'before_section' => '',
+			'after_section' => '',
+			'section_class' => '',
+		),
+	);
+
+	add_settings_field(
+		id: 'lisa_algolia_pagination_hits_per_page',
+		title: __( 'Hits Per Page', 'lisa' ),
+		callback: 'lisa_field_hits_per_page_cb',
+		page: 'lisa_index_settings',
+		section: 'lisa_section_algolia_pagination',
+		args: array(
+			'label_for' => 'lisa_algolia_pagination_hits_per_page',
+			'class'     => '',
+			'description' => __( 'Number of hits per page.', 'lisa' ),
+		),
+	);
+
+	add_settings_field(
+		id: 'lisa_algolia_pagination_pagination_limited_to',
+		title: __( 'Pagination Limited To', 'lisa' ),
+		callback: 'lisa_field_pagination_limited_to_cb',
+		page: 'lisa_index_settings',
+		section: 'lisa_section_algolia_pagination',
+		args: array(
+			'label_for' => 'lisa_algolia_pagination_pagination_limited_to',
+			'class'     => '',
+			'description' => __( 'Set the maximum number of hits accessible via pagination.', 'lisa' ),
 		),
 	);
 
@@ -203,13 +247,65 @@ function lisa_section_credentials_cb( array $args ) {
 	<?php
 }
 
+function lisa_section_pagination_cb( array $args ) {
+	global $lisa_current_index;
+	$lisa_current_index = $_GET['index_name'] ?? '';
+	?>
+	<p id="<?php echo esc_attr( $args['id'] ); ?>">
+		<?php esc_html_e( 'The pagination settings for Algolia.', 'lisa' ); ?>
+	</p>
+	<?php
+}
+
+function lisa_field_hits_per_page_cb( array $args ) {
+	global $lisa_current_index;
+	$algolia_indices = get_option( option: 'lisa_algolia_indices' );
+	$hits_per_page = $algolia_indices[ $lisa_current_index ][ $args['label_for'] ] ?? '';
+	?>
+	<input
+		type="text"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
+		name="lisa_algolia_indices[<?php echo esc_attr( $lisa_current_index ); ?>][<?php echo esc_attr( $args['label_for'] ); ?>]"
+		value="<?php echo $hits_per_page; ?>"
+	/>
+	<?php
+	if ( ! empty( $args['description'] ) ) {
+		?>
+		<p class="description">
+			<?php echo esc_html( $args['description'] ); ?>
+		</p>
+		<?php
+	}
+}
+
+function lisa_field_pagination_limited_to_cb( array $args ) {
+	global $lisa_current_index;
+	$algolia_indices = get_option( option: 'lisa_algolia_indices' );
+	$pagination_limited_to = $algolia_indices[ $lisa_current_index ][ $args['label_for'] ] ?? '';
+	?>
+	<input
+		type="text"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
+		name="lisa_algolia_indices[<?php echo esc_attr( $lisa_current_index ); ?>][<?php echo esc_attr( $args['label_for'] ); ?>]"
+		value="<?php echo $pagination_limited_to; ?>"
+	/>
+	<?php
+	if ( ! empty( $args['description'] ) ) {
+		?>
+		<p class="description">
+			<?php echo esc_html( $args['description'] ); ?>
+		</p>
+		<?php
+	}
+}
+
 function lisa_field_application_id_cb( array $args ) {
 	$algolia_credentials = get_option( option: 'lisa_algolia_credentials' );
 	$application_id = $algolia_credentials[ $args['label_for'] ] ?? '';
 	?>
 	<input
 		type="text"
-		id="<?php esc_attr( $args['label_for'] ); ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
 		name="lisa_algolia_credentials[<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $application_id; ?>"
 	/>
@@ -229,7 +325,7 @@ function lisa_field_search_api_key_cb( array $args ) {
 	?>
 	<input
 		type="text"
-		id="<?php esc_attr( $args['label_for'] ); ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
 		name="lisa_algolia_credentials[<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $search_api_key; ?>"
 	/>
@@ -249,7 +345,7 @@ function lisa_field_write_api_key_cb( array $args ) {
 	?>
 	<input
 		type="password"
-		id="<?php esc_attr( $args['label_for'] ); ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
 		name="lisa_algolia_credentials[<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $write_api_key; ?>"
 	/>
@@ -269,7 +365,7 @@ function lisa_field_admin_api_key_cb( array $args ) {
 	?>
 	<input
 		type="password"
-		id="<?php esc_attr( $args['label_for'] ); ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
 		name="lisa_algolia_credentials[<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $admin_api_key; ?>"
 	/>
@@ -289,7 +385,7 @@ function lisa_field_usage_api_key_cb( array $args ) {
 	?>
 	<input
 		type="text"
-		id="<?php esc_attr( $args['label_for'] ); ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
 		name="lisa_algolia_credentials[<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $usage_api_key; ?>"
 	/>
@@ -309,7 +405,7 @@ function lisa_field_monitoring_api_key_cb( array $args ) {
 	?>
 	<input
 		type="text"
-		id="<?php esc_attr( $args['label_for'] ); ?>"
+		id="<?php echo esc_attr( $args['label_for'] ); ?>"
 		name="lisa_algolia_credentials[<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $monitoring_api_key; ?>"
 	/>
@@ -328,3 +424,73 @@ function lisa_field_monitoring_api_key_cb( array $args ) {
  * @see https://developer.wordpress.org/plugins/settings/using-settings-api/
  */
 add_action( hook_name: 'admin_init', callback: 'lisa_settings_init' );
+
+function lisa_sync_algolia_index_settings( $old_value, $new_value ) {
+	$index_name = $_POST['index_name'] ?? '';
+
+	if ( empty( $index_name ) || empty( $new_value[ $index_name ] ) ) {
+		return;
+	}
+
+	$credentials = get_option( 'lisa_algolia_credentials' );
+	$application_id = $credentials['lisa_algolia_credentials_application_id'] ?? '';
+	$write_api_key = $credentials['lisa_algolia_credentials_write_api_key'] ?? '';
+
+	if ( empty( $application_id ) || empty( $write_api_key ) ) {
+		return;
+	}
+
+	$settings = $new_value[ $index_name ];
+
+	$response = wp_remote_request(
+		"https://$application_id.algolia.net/1/indexes/$index_name/settings",
+		array(
+			'method'  => 'PUT',
+			'headers' => array(
+				'X-Algolia-API-Key'        => $write_api_key,
+				'X-Algolia-Application-Id' => $application_id,
+				'Content-Type'             => 'application/json',
+			),
+			'body'    => wp_json_encode(
+				array(
+					'hitsPerPage'         => (int) ( $settings['lisa_algolia_pagination_hits_per_page'] ?? 20 ),
+					'paginationLimitedTo' => (int) ( $settings['lisa_algolia_pagination_pagination_limited_to'] ?? 1000 ),
+				)
+			),
+		)
+	);
+
+	// Handle response and show admin notices.
+	if ( is_wp_error( $response ) ) {
+		add_settings_error(
+			'lisa_messages',
+			'algolia_sync_failed',
+			__( 'Failed to sync settings to Algolia: network error.', 'lisa' ),
+			'error'
+		);
+		return;
+	}
+
+	$response_code = wp_remote_retrieve_response_code( $response );
+	if ( $response_code !== 200 ) {
+		add_settings_error(
+			'lisa_messages',
+			'algolia_sync_failed',
+			sprintf(
+				__( 'Failed to sync settings to Algolia. Response code: %d.', 'lisa' ),
+				$response_code
+			),
+			'error'
+		);
+		return;
+	}
+
+	add_settings_error(
+		'lisa_messages',
+		'algolia_sync_success',
+		__( 'Settings successfully synced to Algolia.', 'lisa' ),
+		'updated'
+	);
+}
+
+add_action( hook_name: 'update_option_lisa_algolia_indices', callback: 'lisa_sync_algolia_index_settings', priority: 10, accepted_args: 2 );

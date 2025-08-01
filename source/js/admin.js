@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const fetchIndicesBtn = document.getElementById("lisa-fetch-indices");
+  const fetchIndexSettingsBtn = document.getElementById(
+    "lisa-fetch-index-settings"
+  );
   const indicesList = document.getElementById("lisa-indices-list");
 
   const createParagraph = (text) => {
@@ -7,6 +10,50 @@ document.addEventListener("DOMContentLoaded", () => {
     p.textContent = text;
     return p;
   };
+
+  if (fetchIndexSettingsBtn) {
+    const paginationHitsPerPage = document.getElementById(
+      "lisa_algolia_pagination_hits_per_page"
+    );
+    const paginationPaginationLimitedTo = document.getElementById(
+      "lisa_algolia_pagination_pagination_limited_to"
+    );
+
+    fetchIndexSettingsBtn.addEventListener("click", async () => {
+      fetchIndexSettingsBtn.disabled = true;
+      fetchIndexSettingsBtn.textContent = lisa.fetch_status_label;
+
+      const formData = new FormData();
+      formData.append("action", "lisa_fetch_algolia_index_settings");
+      formData.append("nonce", lisa.lisa_fetch_algolia_index_settings_nonce);
+      formData.append("index_name", fetchIndexSettingsBtn.dataset.indexName);
+
+      try {
+        const response = await fetch(lisa.ajax_url, {
+          method: "POST",
+          credentials: "same-origin",
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        console.log(result);
+
+        if (!result.success) {
+          throw new Error();
+        }
+
+        paginationHitsPerPage.value = result.data.hitsPerPage;
+        paginationPaginationLimitedTo.value = result.data.paginationLimitedTo;
+      } catch (error) {
+        console.log(error);
+      } finally {
+        fetchIndexSettingsBtn.disabled = false;
+        fetchIndexSettingsBtn.textContent =
+          lisa.fetch_index_settings_button_label;
+      }
+    });
+  }
 
   if (fetchIndicesBtn) {
     fetchIndicesBtn.addEventListener("click", async () => {
@@ -47,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         indicesList.appendChild(createParagraph(lisa.fetch_error_label));
       } finally {
         fetchIndicesBtn.disabled = false;
-        fetchIndicesBtn.textContent = lisa.fetch_button_label;
+        fetchIndicesBtn.textContent = lisa.fetch_indices_button_label;
       }
     });
   }
