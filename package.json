@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "build:css": "sass source/scss/admin.scss assets/css/admin.css --no-source-map --style=compressed",
+    "build:js": "esbuild source/js/admin.js --bundle --minify --outfile=assets/js/admin.min.js",
+    "build:admin": "npm run build:css && npm run build:js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.8",
+    "sass": "^1.89.2"
+  }
+}
