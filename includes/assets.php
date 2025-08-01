@@ -3,14 +3,14 @@
 function lisa_enqueue_admin_scripts() {
 	wp_enqueue_style(
 		handle: 'lisa-admin-styles',
-		src: plugins_url( '/assets/css/admin.css', __FILE__ ),
+		src: LISA_PLUGIN_URL . '/assets/css/admin.css',
 		deps: array(),
 		ver: '0.1.0',
 	);
 
 	wp_enqueue_script(
 		handle: 'lisa-admin-scripts',
-		src: plugins_url( '/assets/js/admin.min.js', __FILE__ ),
+		src: LISA_PLUGIN_URL . '/assets/js/admin.min.js',
 		deps: array(),
 		ver: '0.1.0',
 	);
