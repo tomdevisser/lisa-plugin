@@ -32,7 +32,7 @@ function lisa_fetch_algolia_indices_ajax() {
 	$indices = $data['items'] ?? array();
 
 	update_option(
-		option: 'lisa_algolia_indices',
+		option: 'lisa_algolia_index_metadata',
 		value: $indices
 	);
 

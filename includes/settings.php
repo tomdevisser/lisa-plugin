@@ -18,11 +18,12 @@ function lisa_settings_init() {
 
 	register_setting(
 		option_group: 'lisa_indices',
-		option_name: 'lisa_algolia_indices',
+		option_name: 'lisa_algolia_index_configs',
 		args: array(
 			'type' => 'array',
 			'label' => __( 'Algolia Indices', 'lisa' ),
 			'description' => 'Algolia Indices will contain the configuration for your indices.',
+			'sanitize_callback' => 'lisa_sanitize_algolia_index_configs_cb',
 		)
 	);
 
@@ -155,6 +156,71 @@ function lisa_settings_init() {
 	);
 }
 
+function lisa_sanitize_algolia_index_configs_cb( array $input ): array {
+	if ( ! is_array( $input ) ) {
+		return array();
+	}
+
+	$existing_configs = get_option( 'lisa_algolia_index_configs', array() );
+	$index_name = $_POST['index_name'] ?? '';
+
+	if ( empty( $index_name ) ) {
+		add_settings_error(
+			setting: 'lisa_messages',
+			code: 'missing_index_name',
+			message: __( 'No index name to save to.', 'lisa' ),
+			type: 'error'
+		);
+
+		return $existing_configs;
+	}
+
+	if ( $index_name && isset( $input[ $index_name ] ) ) {
+		$sanitized = array();
+
+		if ( ! empty( $input[ $index_name ]['lisa_algolia_pagination_hits_per_page'] ) ) {
+			$sanitized['lisa_algolia_pagination_hits_per_page'] = trim( $input[ $index_name ]['lisa_algolia_pagination_hits_per_page'] );
+
+			if (
+				! preg_match( '/^\d+$/', $sanitized['lisa_algolia_pagination_hits_per_page'] ) ||
+				(int) $sanitized['lisa_algolia_pagination_hits_per_page'] < 1 ||
+				(int) $sanitized['lisa_algolia_pagination_hits_per_page'] > 1000
+			) {
+				add_settings_error(
+					'lisa_messages',
+					'invalid_hits_per_page',
+					__( 'Hits Per Page must be a number between 1 and 1000.', 'lisa' ),
+					'error'
+				);
+			}
+		}
+
+		if ( ! empty( $input[ $index_name ]['lisa_algolia_pagination_pagination_limited_to'] ) ) {
+			$sanitized['lisa_algolia_pagination_pagination_limited_to'] = trim( $input[ $index_name ]['lisa_algolia_pagination_pagination_limited_to'] );
+
+			if (
+				! preg_match( '/^\d+$/', $sanitized['lisa_algolia_pagination_pagination_limited_to'] ) ||
+				(int) $sanitized['lisa_algolia_pagination_pagination_limited_to'] < 100 ||
+				(int) $sanitized['lisa_algolia_pagination_pagination_limited_to'] > 100000
+			) {
+				add_settings_error(
+					'lisa_messages',
+					'invalid_pagination_limited_to',
+					__( 'Pagination Limited To must be a number between 100 and 100000.', 'lisa' ),
+					'error'
+				);
+			}
+		}
+
+		$existing_configs[ $index_name ] = array_merge(
+			$existing_configs[ $index_name ] ?? array(),
+			$sanitized
+		);
+	}
+
+	return $existing_configs;
+}
+
 function lisa_sanitize_algolia_credentials_cb( array $input ): array {
 	$sanitized = array();
 
@@ -259,13 +325,13 @@ function lisa_section_pagination_cb( array $args ) {
 
 function lisa_field_hits_per_page_cb( array $args ) {
 	global $lisa_current_index;
-	$algolia_indices = get_option( option: 'lisa_algolia_indices' );
+	$algolia_indices = get_option( option: 'lisa_algolia_index_configs' );
 	$hits_per_page = $algolia_indices[ $lisa_current_index ][ $args['label_for'] ] ?? '';
 	?>
 	<input
 		type="text"
 		id="<?php echo esc_attr( $args['label_for'] ); ?>"
-		name="lisa_algolia_indices[<?php echo esc_attr( $lisa_current_index ); ?>][<?php echo esc_attr( $args['label_for'] ); ?>]"
+		name="lisa_algolia_index_configs[<?php echo esc_attr( $lisa_current_index ); ?>][<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $hits_per_page; ?>"
 	/>
 	<?php
@@ -280,13 +346,13 @@ function lisa_field_hits_per_page_cb( array $args ) {
 
 function lisa_field_pagination_limited_to_cb( array $args ) {
 	global $lisa_current_index;
-	$algolia_indices = get_option( option: 'lisa_algolia_indices' );
+	$algolia_indices = get_option( option: 'lisa_algolia_index_configs' );
 	$pagination_limited_to = $algolia_indices[ $lisa_current_index ][ $args['label_for'] ] ?? '';
 	?>
 	<input
 		type="text"
 		id="<?php echo esc_attr( $args['label_for'] ); ?>"
-		name="lisa_algolia_indices[<?php echo esc_attr( $lisa_current_index ); ?>][<?php echo esc_attr( $args['label_for'] ); ?>]"
+		name="lisa_algolia_index_configs[<?php echo esc_attr( $lisa_current_index ); ?>][<?php echo esc_attr( $args['label_for'] ); ?>]"
 		value="<?php echo $pagination_limited_to; ?>"
 	/>
 	<?php
@@ -493,4 +559,4 @@ function lisa_sync_algolia_index_settings( $old_value, $new_value ) {
 	);
 }
 
-add_action( hook_name: 'update_option_lisa_algolia_indices', callback: 'lisa_sync_algolia_index_settings', priority: 10, accepted_args: 2 );
+add_action( hook_name: 'update_option_lisa_algolia_index_configs', callback: 'lisa_sync_algolia_index_settings', priority: 10, accepted_args: 2 );

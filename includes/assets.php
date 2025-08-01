@@ -26,9 +26,6 @@ function lisa_enqueue_admin_scripts() {
 			'fetch_index_settings_button_label' => __( 'Fetch Index Settings', 'lisa' ),
 			'fetch_status_label' => __( 'Fetching...', 'lisa' ),
 			'fetch_error_label' => __( 'Something went wrong while fetching your indices.', 'lisa' ),
-			'no_indices_label' => __( 'No indices found in your Algolia account.', 'lisa' ),
-			'found_one_index'   => __( 'Found 1 index in your Algolia account.', 'lisa' ),
-			'found_many_indices' => __( 'Found %d indices in your Algolia account.', 'lisa' ),
 		)
 	);
 }

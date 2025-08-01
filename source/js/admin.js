@@ -3,13 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const fetchIndexSettingsBtn = document.getElementById(
     "lisa-fetch-index-settings"
   );
-  const indicesList = document.getElementById("lisa-indices-list");
-
-  const createParagraph = (text) => {
-    const p = document.createElement("p");
-    p.textContent = text;
-    return p;
-  };
 
   if (fetchIndexSettingsBtn) {
     const paginationHitsPerPage = document.getElementById(
@@ -36,8 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const result = await response.json();
-
-        console.log(result);
 
         if (!result.success) {
           throw new Error();
@@ -77,21 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error();
         }
 
-        if (result.data.length === 0) {
-          indicesList.innerHTML = "";
-          indicesList.appendChild(createParagraph(lisa.no_indices_label));
-        } else {
-          indicesList.innerHTML = "";
-          const indicesString =
-            result.data.length === 1
-              ? lisa.found_one_index
-              : lisa.found_many_indices.replace("%d", result.data.length);
-
-          indicesList.appendChild(createParagraph(indicesString));
-        }
+        location.reload();
       } catch (error) {
-        indicesList.innerHTML = "";
-        indicesList.appendChild(createParagraph(lisa.fetch_error_label));
+        console.log(error);
       } finally {
         fetchIndicesBtn.disabled = false;
         fetchIndicesBtn.textContent = lisa.fetch_indices_button_label;

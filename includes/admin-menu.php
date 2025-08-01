@@ -92,7 +92,7 @@ function lisa_index_settings_page_html_cb() {
 }
 
 function lisa_indices_page_html_cb() {
-	$indices = get_option( option: 'lisa_algolia_indices', default_value: false );
+	$indices = get_option( option: 'lisa_algolia_index_metadata', default_value: false );
 	?>
 	<div class="wrap">
 		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -100,7 +100,11 @@ function lisa_indices_page_html_cb() {
 		if ( false === $indices ) {
 			?>
 			<p><?php esc_html_e( 'No indices fetched yet.', 'lisa' ); ?></p>
+			<button id="lisa-fetch-indices" class="button">
+				<?php esc_html_e( 'Fetch Indices', 'lisa' ); ?>
+			</button>
 			<?php
+			return;
 		} else {
 			$count = count( $indices );
 			if ( 0 === $count ) {

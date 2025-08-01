@@ -15,7 +15,7 @@ function lisa_list_algolia_indices_widget_cb() {
 	$algolia_credentials = get_option( option: 'lisa_algolia_credentials' );
 	$application_id = $algolia_credentials['lisa_algolia_credentials_application_id'] ?? '';
 	$search_api_key = $algolia_credentials['lisa_algolia_credentials_search_api_key'] ?? '';
-	$indices = get_option( option: 'lisa_algolia_indices', default_value: false );
+	$indices = get_option( option: 'lisa_algolia_index_metadata', default_value: false );
 	?>
 	<div class="lisa-algolia-indices-widget">
 		<div id="lisa-indices-list">
