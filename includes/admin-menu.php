@@ -19,6 +19,37 @@ function lisa_options_pages() {
 		menu_slug: 'lisa_indices',
 		callback: 'lisa_indices_page_html_cb',
 	);
+
+	add_submenu_page(
+		parent_slug: 'lisa',
+		page_title: __( 'Index Settings', 'lisa' ),
+		menu_title: __( 'Index Settings', 'lisa' ),
+		capability: 'manage_options',
+		menu_slug: 'lisa_index_settings',
+		callback: 'lisa_index_settings_page_html_cb',
+	);
+}
+
+function lisa_index_settings_page_html_cb() {
+	$index_name = $_GET['index_name'] ?? '';
+
+	if ( empty( $index_name ) ) {
+		add_settings_error(
+			'lisa_messages',
+			'lisa_index_missing',
+			__( 'No index name specified.', 'lisa' ),
+			'error'
+		);
+
+		settings_errors( 'lisa_messages' );
+	}
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+		<?php if ( empty( $index_name ) ) return; ?>
+		<p>Index name: <?php echo $index_name; ?></p>
+	</div>
+	<?php
 }
 
 function lisa_indices_page_html_cb() {
@@ -79,7 +110,7 @@ function lisa_indices_page_html_cb() {
 					<tr>
 						<td>
 							<span class="index-name"><?php echo esc_html( $index['name'] ); ?></span>
-							<span class="index-actions"><a href="" data-index-name="<?php esc_attr( $index['name'] ); ?>">Details</a> | <a href="" data-index-name="<?php esc_attr( $index['name'] ); ?>">Edit</a></span>
+							<span class="index-actions"><a href="/wp-admin/admin.php?page=lisa_index_settings&index_name=<?php echo esc_attr( $index['name'] ); ?>">Details</a></span>
 						</td>
 						<td><?php echo esc_html( lisa_time_ago( $index['createdAt'] ) ); ?></td>
 						<td><?php echo esc_html( lisa_time_ago( $index['updatedAt'] ) ); ?></td>
