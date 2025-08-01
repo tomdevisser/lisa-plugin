@@ -149,7 +149,11 @@ function lisa_indices_page_html_cb() {
 					<tr>
 						<td>
 							<span class="index-name"><?php echo esc_html( $index['name'] ); ?></span>
-							<span class="index-actions"><a href="/wp-admin/admin.php?page=lisa_index_settings&index_name=<?php echo esc_attr( $index['name'] ); ?>">Details</a></span>
+							<span class="index-actions">
+								<a href="/wp-admin/admin.php?page=lisa_index_settings&index_name=<?php echo esc_attr( $index['name'] ); ?>">
+									<?php _e( 'Edit', 'lisa' ); ?>
+								</a>
+							</span>
 						</td>
 						<td><?php echo esc_html( lisa_time_ago( $index['createdAt'] ) ); ?></td>
 						<td><?php echo esc_html( lisa_time_ago( $index['updatedAt'] ) ); ?></td>
