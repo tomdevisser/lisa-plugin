@@ -20,12 +20,6 @@ function lisa_enqueue_admin_scripts() {
 		object_name: 'lisa',
 		l10n: array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'lisa_fetch_algolia_indices_nonce' => wp_create_nonce( 'lisa_fetch_algolia_indices' ),
-			'lisa_fetch_algolia_index_settings_nonce' => wp_create_nonce( 'lisa_fetch_algolia_index_settings' ),
-			'fetch_indices_button_label' => __( 'Fetch Indices', 'lisa' ),
-			'fetch_index_settings_button_label' => __( 'Fetch Index Settings', 'lisa' ),
-			'fetch_status_label' => __( 'Fetching...', 'lisa' ),
-			'fetch_error_label' => __( 'Something went wrong while fetching your indices.', 'lisa' ),
 		)
 	);
 }
